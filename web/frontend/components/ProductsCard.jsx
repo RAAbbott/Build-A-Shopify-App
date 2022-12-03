@@ -49,6 +49,15 @@ export function ProductsCard() {
     }
   };
 
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    const response = await fetch("/api/products");
+    setIsLoading(false)
+
+    console.log(await response.json())
+    
+  }
+
   return (
     <>
       {toastMarkup}
@@ -56,8 +65,8 @@ export function ProductsCard() {
         title="Product Counter"
         sectioned
         primaryFooterAction={{
-          content: "Populate 5 products",
-          onAction: handlePopulate,
+          content: "Fetch Products",
+          onAction: fetchProducts,
           loading: isLoading,
         }}
       >
