@@ -11,17 +11,28 @@ import {
 import { TitleBar } from "@shopify/app-bridge-react";
 
 import { ProductCard, ProductsCard } from "../components";
+import { useAppQuery } from "../hooks";
+import { ProductList } from "../components/ProductList";
 
 export default function HomePage() {
+  const { data, isLoading, refetch, isRefetching } = useAppQuery({
+    url: "/api/products",
+  });
+
+  console.log("data: ", data);
+
   return (
-    <Page>
-      <TitleBar title="App name" primaryAction={null} />
+    <Page title="Dashboard">
       <Layout>
         <Layout.Section>
           <ProductsCard />
         </Layout.Section>
         <Layout.Section>
-          <ProductCard />
+          <ProductList
+            data={data}
+            isLoading={isLoading}
+            isRefetching={isRefetching}
+          />
         </Layout.Section>
       </Layout>
     </Page>

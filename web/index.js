@@ -13,6 +13,7 @@ import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
 import fetchProducts from "./helpers/fetch-products.js";
+import productUpdater from "./helpers/product-updater.js";
 
 const USE_ONLINE_TOKENS = false;
 
@@ -35,7 +36,9 @@ Shopify.Context.initialize({
   // This should be replaced with your preferred storage strategy
   // See note below regarding using CustomSessionStorage with this template.
   SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
-  ...(process.env.SHOP_CUSTOM_DOMAIN && {CUSTOM_SHOP_DOMAINS: [process.env.SHOP_CUSTOM_DOMAIN]}),
+  ...(process.env.SHOP_CUSTOM_DOMAIN && {
+    CUSTOM_SHOP_DOMAINS: [process.env.SHOP_CUSTOM_DOMAIN],
+  }),
 });
 
 // NOTE: If you choose to implement your own storage strategy using
@@ -109,13 +112,17 @@ export async function createServer(
     })
   );
 
-  app.get('/api/products', async (req, res) => {
-    const session = await Shopify.Utils.loadCurrentSession(req, res, app.get('use-online-tokens'))
+  app.get("/api/products", async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
 
-    const products = await fetchProducts(session)
+    const products = await fetchProducts(session);
 
-    res.status(200).send({products})
-  })
+    res.status(200).send({ products });
+  });
 
   app.get("/api/products/count", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
@@ -153,6 +160,25 @@ export async function createServer(
   // All endpoints after this point will have access to a request.body
   // attribute, as a result of the express.json() middleware
   app.use(express.json());
+
+  app.post("/api/products/update", async (req, res) => {
+    const session = await Shopify.Utils.loadCurrentSession(
+      req,
+      res,
+      app.get("use-online-tokens")
+    );
+    let status = 200;
+    let error = null;
+
+    try {
+      await productUpdater(session, req.body);
+    } catch (e) {
+      console.log(`Failed to process products/update: ${e.message}`);
+      status = 500;
+      error = e.message;
+    }
+    res.status(status).send({ success: status === 200, error });
+  });
 
   app.use((req, res, next) => {
     const shop = Shopify.Utils.sanitizeShop(req.query.shop);
