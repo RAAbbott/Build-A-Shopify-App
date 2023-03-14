@@ -14,7 +14,7 @@ export const ProductList = ({ data, isLoading, isRefetching }) => {
     <Layout>
       {data?.products.length ? (
         data.products.map((product) => (
-          <Layout.Section>
+          <Layout.Section key={product.id}>
             <ProductCard {...product}></ProductCard>
           </Layout.Section>
         ))

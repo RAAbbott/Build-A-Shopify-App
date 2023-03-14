@@ -10,7 +10,7 @@ export const Variants = ({ variants, updateVariant, isUpdating }) => {
         selectable={false}
       >
         {variants.map((variant) => (
-          <IndexTable.Row>
+          <IndexTable.Row key={variant.id}>
             <IndexTable.Cell>
               <TextField
                 value={variant.title}
